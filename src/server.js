@@ -1,4 +1,5 @@
 import {Server} from "hapi";
+import Good from "good";
 import React from "react";
 import Router from "react-router";
 import Transmit from "react-transmit";
@@ -10,10 +11,30 @@ import url from "url";
  */
 const server = new Server();
 server.connection({port: process.env.PORT || 8000});
-server.start(function () {
-	console.info("==> ✅  Server is listening");
-	console.info("==> 🌎  Go to " + server.info.uri.toLowerCase());
+
+server.register({
+    register: Good,
+    options: {
+        reporters: [{
+            reporter: require('good-console'),
+            events: {
+                response: '*',
+                log: '*'
+            }
+        }]
+    }
+}, function (err) {
+    if (err) {
+        throw err; // something bad happened loading the plugin
+    }
+	
+	server.start(function () {
+		server.log("==> ✅  Server is listening");
+		server.log("==> 🌎  Go to " + server.info.uri.toLowerCase());
+	});
 });
+
+
 
 /**
  * Attempt to serve static requests from the public folder.
@@ -64,6 +85,9 @@ server.ext("onPreResponse", (request, reply) => {
 						<meta charset="utf-8">
 						<title>react-isomorphic-starterkit</title>
 						<link rel="shortcut icon" href="/favicon.ico">
+						<link rel="stylesheet" type="text/css" href="/semantic.css">
+						<script src="/jquery-2.1.4.min.js"></script>
+						<script src="/semantic.js"></script>
 					</head>
 					<body>
 						<div id="react-root">${reactString}</div>
